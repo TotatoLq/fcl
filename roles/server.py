@@ -4,10 +4,10 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import torch
-
+from utils.visualize_utils import DrawCluster
 from config import args
 from models.gcn_encoder import GCNEncoder
-from utils import save_accuracy_record
+from utils.utils import save_accuracy_record
 
 
 class ServerManager:
@@ -21,7 +21,7 @@ class ServerManager:
         self.input_dim = datasets.input_dim
         self.global_data = datasets.global_data
         self.subgraphs = datasets.subgraphs
-
+        self.cluster_drawer = DrawCluster(self)
         self.num_clients = num_clients
         self.device = device
         self.client_sample_ratio = client_sample_ratio
@@ -80,61 +80,36 @@ class ServerManager:
     def _kmeans(z, k, num_iters=50, seed=0):
         if k <= 0:
             return torch.zeros(z.size(0), dtype=torch.long, device=z.device)
-        rng = torch.Generator(device=z.device)
+
+        # 统一使用 CPU generator
+        rng = torch.Generator(device="cpu")
         rng.manual_seed(seed)
+
+        # 初始中心随机打乱索引（CPU）
         perm = torch.randperm(z.size(0), generator=rng)
+        perm = perm.to(z.device)
+
         centers = z[perm[:k]].clone()
         labels = torch.zeros(z.size(0), dtype=torch.long, device=z.device)
+
         for _ in range(num_iters):
             dist = torch.cdist(z, centers)
             labels = dist.argmin(dim=1)
+
             for idx in range(k):
                 mask = labels == idx
                 if mask.any():
                     centers[idx] = z[mask].mean(dim=0)
                 else:
-                    centers[idx] = z[perm[torch.randint(0, z.size(0), (1,), generator=rng)]]
+                    # 随机选一个点作为空簇中心（CPU 采样）
+                    ridx = torch.randint(
+                        0, z.size(0), (1,), generator=rng
+                    ).item()
+                    centers[idx] = z[ridx]
+
         return labels
 
-    def visualize_clusters(self, round_idx):
-        self.model.eval()
-        self.model.preprocess(self.global_data.adj, self.global_data.x)
-        with torch.no_grad():
-            z = self.model(self.device).detach()
 
-        max_points = getattr(args, "viz_max_points", 2000)
-        if max_points > 0 and z.size(0) > max_points:
-            rng = torch.Generator(device=z.device).manual_seed(args.seed + round_idx)
-            perm = torch.randperm(z.size(0), generator=rng)[:max_points]
-            z = z[perm]
-        else:
-            perm = None
-
-        z_2d = self._pca_2d(z).cpu().numpy()
-        k = getattr(args, "k_clusters", 0)
-        if k and k > 0:
-            labels = self._kmeans(
-                z,
-                k,
-                num_iters=getattr(args, "viz_kmeans_iters", 50),
-                seed=args.seed + round_idx
-            ).cpu().numpy()
-        else:
-            labels = self.global_data.y
-            labels = labels[perm].cpu().numpy() if perm is not None else labels.cpu().numpy()
-
-        out_dir = getattr(args, "viz_out_dir", "./cluster_viz")
-        os.makedirs(out_dir, exist_ok=True)
-        out_path = os.path.join(out_dir, f"cluster_round_{round_idx:03d}.png")
-
-        plt.figure(figsize=(7, 6))
-        plt.scatter(z_2d[:, 0], z_2d[:, 1], c=labels, cmap="tab20", s=8, alpha=0.8)
-        plt.title(f"Cluster visualization (round {round_idx:03d})")
-        plt.axis("off")
-        plt.tight_layout()
-        plt.savefig(out_path, dpi=200)
-        plt.close()
-        print(f"[INFO] Cluster visualization saved: {out_path}")
 
     def evaluate_global_encoder(self, epochs=100, lr=0.01, weight_decay=0.0):
         self.model.eval()
@@ -223,4 +198,5 @@ class ServerManager:
             if getattr(args, "visualize_clusters", False):
                 viz_every = max(1, getattr(args, "viz_every", log_every))
                 if rnd % viz_every == 0 or rnd == self.num_rounds - 1:
-                    self.visualize_clusters(rnd)
+                    self.cluster_drawer.visualize_clusters(rnd)
+

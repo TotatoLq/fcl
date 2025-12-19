@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils import sparse_mx_to_torch_sparse_tensor, adj_to_symmetric_norm
+from utils.utils import sparse_mx_to_torch_sparse_tensor, adj_to_symmetric_norm
 
 
 class GCNConv(nn.Module):
