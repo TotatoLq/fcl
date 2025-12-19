@@ -166,5 +166,3 @@ def save_accuracy_record(
     with open(file_path, mode="a", newline="") as f:
         writer = csv.writer(f)
         writer.writerow([num_rounds, val_acc, test_acc])
-
-    print(f"[INFO] 第 {num_rounds} 轮数据写入成功 → val={val_acc:.4f}, test={test_acc:.4f}")

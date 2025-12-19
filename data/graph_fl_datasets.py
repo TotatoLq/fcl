@@ -131,8 +131,3 @@ class GraphFLDataset(Dataset):
                 self.global_data.train_idx += self.subgraphs[i].global_train_idx
                 self.global_data.val_idx += self.subgraphs[i].global_val_idx
                 self.global_data.test_idx += self.subgraphs[i].global_test_idx
-        # if self.analysis_local_subgraph:
-        #     for i in range(len(self.subgraphs)):
-        #         structure_statis_info = analysis_graph_structure_statis_info(self.subgraphs[i])
-        #         structure_homo_hete_label_info, structure_homo_hete_feature_info = analysis_graph_structure_homo_hete_info(
-        #             self.subgraphs[i])

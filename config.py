@@ -93,6 +93,19 @@ parser.add_argument('--log_every', type=int, default=5)
 
 
 
+parser.add_argument('--eval_every', type=int, default=1)              # 全局评估间隔：每隔多少轮联邦通信评估一次全局 encoder
+parser.add_argument('--probe_epochs', type=int, default=100)          # probe 评估时线性分类器/探针模型的训练轮数
+parser.add_argument('--probe_lr', type=float, default=1e-2)           # probe 评估阶段使用的学习率
+parser.add_argument('--probe_weight_decay', type=float, default=0.0)  # probe 评估阶段的权重衰减系数（L2 正则）
+
+parser.add_argument('--visualize_clusters', action='store_true')       # 是否开启聚类结果可视化（不加该参数则不执行可视化）
+parser.add_argument('--viz_every', type=int, default=10)               # 聚类可视化的轮次间隔：每隔多少轮进行一次可视化
+parser.add_argument('--viz_out_dir', type=str, default='./cluster_viz')# 聚类可视化结果的输出目录
+parser.add_argument('--viz_max_points', type=int, default=2000)        # 可视化时最多绘制的节点/样本数量（防止点太多）
+parser.add_argument('--viz_kmeans_iters', type=int, default=50)        # 可视化中 K-means 聚类的最大迭代次数
+
+
+
 args = parser.parse_args()
 
 # 数据集名称
