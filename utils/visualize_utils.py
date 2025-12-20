@@ -51,7 +51,6 @@ class DrawCluster:
         os.makedirs(out_dir, exist_ok=True)
 
         out_path = os.path.join(out_dir,f"{dataset_name}_{num_clients}_{partition}_{gmodel}_{round_idx:03d}.png")
-
         plt.figure(figsize=(7, 6))
         plt.scatter(z_2d[:, 0], z_2d[:, 1], c=labels, cmap="tab20", s=8, alpha=0.8)
         plt.title(f"Cluster visualization (round {round_idx:03d})")

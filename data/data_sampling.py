@@ -35,13 +35,16 @@ def data_partitioning(G, sampling, num_clients,ratio_train, ratio_val, ratio_tes
             client_indices = np.where(np.array(membership) == client_id)[0]
             client_indices = list(client_indices)
             node_dict[client_id] = client_indices
+
+    elif sampling == 'Louvain':
+        from data.structure_iid import structure_iid_louvain
+        graph_nx_louvain = to_networkx(G, to_undirected=True)
+        node_dict = structure_iid_louvain(graph=graph_nx_louvain, num_clients=num_clients)
+        structure_info_injection = False
+
     else:
         print("not support such partiction")
-    # elif sampling == 'Louvain':
-    #     from data.structure_iid import structure_iid_louvain
-    #     graph_nx_louvain = to_networkx(G, to_undirected=True)
-    #     node_dict = structure_iid_louvain(graph=graph_nx_louvain, num_clients=num_clients)
-    #     structure_info_injection = False
+
     subgraph_list = construct_subgraph_dict_from_node_dict(
         G=G,
         num_clients=num_clients,

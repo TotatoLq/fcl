@@ -76,12 +76,11 @@ class GraphFLDataset(Dataset):
             osp.join(self.processed_dir, f"data{idx}.pt"),
             weights_only=False
         )
-
         return data
 
     def load_global_graph(self, process=False):
         print("| ★  Load Global Data: {}".format(self.name))
-        if self.name in ["Cora"]:
+        if self.name in ["Cora", "CiteSeer", "PubMed"]:
             self.global_dataset = Planetoid(root=self.raw_dir, name=self.name)
             self.input_dim = self.global_dataset.num_features
             self.output_dim = self.global_dataset.num_classes
@@ -98,6 +97,7 @@ class GraphFLDataset(Dataset):
                 self.global_data.adj = csr_matrix(
                     (self.global_data.edge_weight, (self.global_data.row, self.global_data.col)),
                     shape=(self.global_data.num_nodes, self.global_data.num_nodes))
+
         else:
             raise ValueError("Not supported for this dataset, please check root file path and dataset name")
 
