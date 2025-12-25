@@ -137,12 +137,14 @@ def save_accuracy_record(
         num_rounds,
         val_acc,
         test_acc,
+        val_f1=None,
+        test_f1=None,
         save_dir="./acc_records"
     ):
     """
     创建或追加写入 acc_xxx.csv 文件
     文件格式：
-        num_rounds, val_acc, test_acc
+        num_rounds, val_acc, test_acc, val_f1, test_f1
     """
 
     # 确保保存目录存在
@@ -159,10 +161,10 @@ def save_accuracy_record(
     if not file_exists:
         with open(file_path, mode="w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["num_rounds", "val_acc", "test_acc"])
+            writer.writerow(["num_rounds", "val_acc", "test_acc", "val_f1", "test_f1"])
         print(f"[INFO] 创建新文件：{file_path}")
 
     # 追加写入一行数据
     with open(file_path, mode="a", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow([num_rounds, val_acc, test_acc])
+        writer.writerow([num_rounds, val_acc, test_acc, val_f1, test_f1])

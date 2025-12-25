@@ -10,12 +10,12 @@ def main():
 
     server.collaborative_training_encoder(client_manager.clients)
 
-    k = getattr(args, "k_clusters", None)
-    if k is not None:
-        for c in client_manager.clients:
-            labels = c.local_cluster(args.gpu_id, k)
-            if labels is not None:
-                print(f"Client {c.client_id} clustering done, K={k}")
+    # k = getattr(args, "k_clusters", None)
+    # if k is not None:
+    #     for c in client_manager.clients:
+    #         labels = c.local_cluster(args.gpu_id, k)
+    #         if labels is not None:
+    #             print(f"Client {c.client_id} clustering done, K={k},label={labels}")
 
 
 if __name__ == "__main__":
