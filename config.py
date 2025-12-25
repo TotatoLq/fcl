@@ -104,7 +104,9 @@ parser.add_argument('--viz_out_dir', type=str, default='./cluster_viz')# 聚类�
 parser.add_argument('--viz_max_points', type=int, default=2000)        # 可视化时最多绘制的节点/样本数量（防止点太多）
 parser.add_argument('--viz_kmeans_iters', type=int, default=50)        # 可视化中 K-means 聚类的最大迭代次数
 
-
+# -------------------- 模型导出相关参数 --------------------
+parser.add_argument('--best_model_dir', type=str, default="./checkpoints",  # 最佳模型导出目录
+                    help='保存全局 encoder 最佳权重的路径')
 
 args = parser.parse_args()
 

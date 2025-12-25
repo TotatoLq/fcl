@@ -30,7 +30,10 @@ class ServerManager:
         self.num_rounds = num_round  # 你 manager 里传的是 num_round
         self.hidden_dim = args.hidden_dim
         self.emb_dim = getattr(args, "emb_dim", args.hidden_dim)
-
+        self.best_val_acc = float("-inf")
+        self.best_model_dir = getattr(args, "best_model_dir", "./checkpoints")
+        os.makedirs(self.best_model_dir, exist_ok=True)
+        self.best_model_path = None
         self.init_model()
 
     def init_model(self):
@@ -180,6 +183,27 @@ class ServerManager:
 
         return val_acc, test_acc, val_f1, test_f1
 
+    def _save_best_model(self, rnd, val_acc, test_acc, val_f1, test_f1):
+        file_name = (
+            f"best_encoder_{args.data_name}_{args.partition}_"
+            f"{self.model_name}_{args.num_clients}c_seed{args.seed}.pt"
+        )
+        file_path = os.path.join(self.best_model_dir, file_name)
+        torch.save({
+            "round": rnd,
+            "model_state_dict": self.model.state_dict(),
+            "val_acc": val_acc,
+            "test_acc": test_acc,
+            "val_f1": val_f1,
+            "test_f1": test_f1,
+            "data_name": args.data_name,
+            "partition": args.partition,
+            "gmodel_name": self.model_name,
+            "num_clients": args.num_clients,
+            "seed": args.seed,
+        }, file_path)
+        self.best_model_path = file_path
+        print(f"[INFO] Save best global encoder to {file_path} (val_acc={val_acc:.4f})")
 
     def collaborative_training_encoder(self, clients):
         print("| ★ Start Federated Graph Clustering: train global encoder (unsupervised)")
@@ -268,6 +292,9 @@ class ServerManager:
                             f"NMI={nmi_str} | ARI={ari_str} | Purity={purity_str} | Modularity={modularity_str} | "
                             f"val_f1={val_f1} | test_f1={test_f1}"
                         )
+                if val_acc > self.best_val_acc:
+                    self.best_val_acc = val_acc
+                    self._save_best_model(rnd, val_acc, test_acc, val_f1, test_f1)
             if getattr(args, "visualize_clusters", False):
                 viz_every = max(1, getattr(args, "viz_every", log_every))
                 if rnd % viz_every == 0 or rnd == self.num_rounds - 1:
