@@ -42,3 +42,19 @@ class GCNEncoder(nn.Module):
         z = self.conv2(z, adj)
 
         return F.normalize(z, dim=1)
+
+    def model_forward(self, idx, device):
+        """Forward helper that mirrors AdaFGL's interface.
+
+        Args:
+            idx: Iterable of node indices to fetch embeddings for.
+            device: Target device.
+
+        Returns:
+            Tensor of node embeddings for the provided indices.
+        """
+        if isinstance(idx, range):
+            idx = list(idx)
+        index_tensor = torch.as_tensor(idx, dtype=torch.long, device=device)
+        all_embeddings = self.forward(device)
+        return all_embeddings[index_tensor]
