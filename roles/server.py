@@ -115,38 +115,6 @@ class ServerManager:
 
         graph = self._get_nx_graph()
         return evaluate_clustering(labels_true, labels_pred, graph=graph)
-         # if k <= 0:
-        #     return torch.zeros(z.size(0), dtype=torch.long, device=z.device)
-        #
-        # # 统一使用 CPU generator
-        # rng = torch.Generator(device="cpu")
-        # rng.manual_seed(seed)
-        #
-        # # 初始中心随机打乱索引（CPU）
-        # perm = torch.randperm(z.size(0), generator=rng)
-        # perm = perm.to(z.device)
-
-        # centers = z[perm[:k]].clone()
-        # labels = torch.zeros(z.size(0), dtype=torch.long, device=z.device)
-
-        # for _ in range(num_iters):
-        #     dist = torch.cdist(z, centers)
-        #     labels = dist.argmin(dim=1)
-
-            # for idx in range(k):
-            #     mask = labels == idx
-            #     if mask.any():
-            #         centers[idx] = z[mask].mean(dim=0)
-            #     else:
-            #         # 随机选一个点作为空簇中心（CPU 采样）
-            #         ridx = torch.randint(
-            #             0, z.size(0), (1,), generator=rng
-            #         ).item()
-            #         centers[idx] = z[ridx]
-
-        # return labels
-
-
 
     def evaluate_global_encoder(self, epochs=100, lr=0.01, weight_decay=0.0):
         self.model.eval()

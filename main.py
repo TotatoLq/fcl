@@ -1,7 +1,7 @@
 from config import args
 from data.load_data import load_dataset
 from roles.manager import load_client_server
-from step2 import realtrain ,best_encoder_checkpoint_path
+from realtrain import realtrain ,best_encoder_checkpoint_path
 
 def pretrain():
     datasets = load_dataset(args)
