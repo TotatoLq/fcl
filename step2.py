@@ -15,14 +15,18 @@ from utils.utils import set_seed
 warnings.filterwarnings("ignore")
 
 
-def _load_best_encoder(dataset, device):
-    """加载全局阶段保存的最佳编码器权重。"""
+def best_encoder_checkpoint_path():
+    """返回全局阶段最佳编码器的检查点路径。"""
     best_dir = getattr(args, "best_model_dir", "./checkpoints")
     file_name = (
         f"best_encoder_{args.data_name}_{args.partition}_"
         f"{args.gmodel_name}_{args.num_clients}c_seed{args.seed}.pt"
     )
-    best_path = Path(best_dir) / file_name
+    return Path(best_dir) / file_name
+
+def _load_best_encoder(dataset, device):
+    """加载全局阶段保存的最佳编码器权重。"""
+    best_path = best_encoder_checkpoint_path()
     if not best_path.exists():
         raise FileNotFoundError(
             f"Best encoder checkpoint not found: {best_path}. "
@@ -152,7 +156,7 @@ def _clustering_metrics(y_true, y_pred):
     return nmi, ari, purity
 
 
-def step2_main(datasets=None):
+def realtrain(datasets=None):
     """改成：冻结全局 encoder ->（可选）图平滑 -> 本地 KMeans 聚类 -> 聚类指标评估"""
     main_normalize_train = getattr(args, "normalize_train", 1)
     gpu_id = args.gpu_id
@@ -171,8 +175,8 @@ def step2_main(datasets=None):
             name=args.data_name,
             sampling=args.partition,
             num_clients=num_clients,
-            analysis_local_subgraph=True,
-            analysis_global_graph=False,
+            analysis_local_subgraph=True, #对每一个客户端本地子图做结构分析
+            analysis_global_graph=False,  #对全局原始大图做结构分析
         )
 
     prop_steps = int(getattr(args, "prop_steps", 2))  # 你也可以在 config 里加这个参数
@@ -269,4 +273,4 @@ def step2_main(datasets=None):
 
 
 if __name__ == "__main__":
-    step2_main()
+    realtrain()

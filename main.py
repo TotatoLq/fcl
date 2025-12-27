@@ -1,7 +1,7 @@
 from config import args
 from data.load_data import load_dataset
 from roles.manager import load_client_server
-from step2 import step2_main
+from step2 import realtrain ,best_encoder_checkpoint_path
 
 def pretrain():
     datasets = load_dataset(args)
@@ -9,7 +9,7 @@ def pretrain():
 
     server.collaborative_training_encoder(client_manager.clients)
 
-    return datasets, server
+    #return datasets, server
     # k = getattr(args, "k_clusters", None)
     # if k is not None:
     #     for c in client_manager.clients:
@@ -22,11 +22,14 @@ def pretrain():
 
 def main():
     print(args)
-    datasets, server = pretrain()
+    print("| ★★★★★★★★★★  Starting pretrain ★★★★★★★★★★ |")
+    pretrain()
 
-    if server.best_model_path:
-        print("| ★  Starting step2_main ★ |")
-        step2_main(datasets)
+    if best_encoder_checkpoint_path():
+        print("| ★★★★★★★★★★  Starting step2_main ★★★★★★★★★★ |")
+        realtrain()
+    else:
+        print("| ★★★★★★★★★★  No best model found, please check your pretrain ★★★★★★★★★★ |")
 
 
 if __name__ == "__main__":

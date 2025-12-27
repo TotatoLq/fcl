@@ -114,7 +114,7 @@ args = parser.parse_args()
 args.data_name="Cora"
 
 # 划分方式  # 图划分方法：Metis / Louvain
-args.partition="Louvain"
+args.partition="Metis"
 
 # 全局模型结构
 args.gmodel_name="GCN"
