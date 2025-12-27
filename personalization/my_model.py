@@ -32,6 +32,7 @@ class MyModel(nn.Module):
             feat_dim=self.feat_dim,
             hidden_dim=self.hidden_dim,
             output_dim=self.output_dim,
+            processed_dim=self.nodes_embedding.shape[1],
             dropout=0.5,
             prop_steps=self.prop_steps,
             bn=False,
@@ -296,7 +297,18 @@ class HetePropagateModel(nn.Module):
 
 
 class HomoPropagateModel(nn.Module):
-    def __init__(self, num_layers, feat_dim, hidden_dim, output_dim, prop_steps, dropout=0.5, bn=False, ln=False):
+    def __init__(
+            self,
+            num_layers,
+            feat_dim,
+            hidden_dim,
+            output_dim,
+            processed_dim,
+            prop_steps,
+            dropout=0.5,
+            bn=False,
+            ln=False,
+    ):
         super().__init__()
         self.num_layers = num_layers
         self.dropout_layer = nn.Dropout(dropout)
@@ -320,6 +332,7 @@ class HomoPropagateModel(nn.Module):
                     self.norms.append(nn.LayerNorm(hidden_dim))
 
         self.prelu = nn.PReLU()
+        self.lr_global_trans = nn.Linear(processed_dim, output_dim)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -327,6 +340,8 @@ class HomoPropagateModel(nn.Module):
         for lr_smooth_tran in self.lr_smooth_trans:
             nn.init.xavier_uniform_(lr_smooth_tran.weight, gain=gain)
             nn.init.zeros_(lr_smooth_tran.bias)
+        nn.init.xavier_uniform_(self.lr_global_trans.weight, gain=gain)
+        nn.init.zeros_(self.lr_global_trans.bias)
 
     def forward(self, smoothed_feature, processed_feature, device):
         smoothed_feature = smoothed_feature.to(device)
@@ -339,8 +354,9 @@ class HomoPropagateModel(nn.Module):
             smoothed_feature = self.prelu(smoothed_feature)
             smoothed_feature = self.dropout_layer(smoothed_feature)
         local_smooth_emb = self.lr_smooth_trans[-1](smoothed_feature)
+        global_emb = self.lr_global_trans(processed_feature)
 
-        return local_smooth_emb, processed_feature
+        return local_smooth_emb, global_emb
 
 
 def getre_scale(emb):
